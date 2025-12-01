@@ -1,27 +1,13 @@
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
-}
-
-html,
-body {
-  max-width: 100vw;
-  overflow-x: hidden;
-}
-
-body {
-  color: var(--foreground);
-  background: var(--background);
-  font-family: Arial, Helvetica, sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
+  --background: #0f172a;
+  --foreground: #ffffff;
+  --card-bg: #1e293b;
+  --card-hover: #334155;
+  --primary: #4ade80;
+  /* Green */
+  --secondary: #f87171;
+  /* Red */
+  --border: #334155;
 }
 
 * {
@@ -30,13 +16,31 @@ body {
   margin: 0;
 }
 
-a {
-  color: inherit;
-  text-decoration: none;
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: system-ui, -apple-system, sans-serif;
 }
 
-@media (prefers-color-scheme: dark) {
-  html {
-    color-scheme: dark;
+a {
+  text-decoration: none;
+  color: inherit;
+}
+
+@media print {
+  nav {
+    display: none !important;
+  }
+
+  /* Reset the padding added in layout.tsx */
+  body>div {
+    padding-top: 0 !important;
+  }
+
+  /* Ensure background colors are printed */
+  body {
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+    background: white;
   }
 }
