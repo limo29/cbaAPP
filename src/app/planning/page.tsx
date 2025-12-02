@@ -29,7 +29,10 @@ export default function PlanningPage() {
             const formattedData = data.map((item: any) => ({
                 ...item,
                 is_completed: Boolean(item.is_completed)
-            }));
+            })).sort((a: any, b: any) => {
+                if (a.is_completed === b.is_completed) return 0;
+                return a.is_completed ? 1 : -1;
+            });
             setItems(formattedData);
         } catch (error) {
             console.error('Failed to fetch items:', error);

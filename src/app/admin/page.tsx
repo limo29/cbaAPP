@@ -5,12 +5,15 @@ import dynamic from 'next/dynamic';
 import { DndContext, closestCenter, KeyboardSensor, PointerSensor, useSensor, useSensors, DragEndEvent } from '@dnd-kit/core';
 import { arrayMove, SortableContext, sortableKeyboardCoordinates, verticalListSortingStrategy, useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
-import { Upload, Plus, Settings, Trash2, Edit2, GripVertical, X, Save, AlertTriangle, Check, RefreshCw, User } from 'lucide-react';
+import { Upload, Plus, Settings, Trash2, Edit2, GripVertical, X, Save, AlertTriangle, Check, RefreshCw, User, RotateCcw, Phone } from 'lucide-react';
 import Link from 'next/link';
 import Papa from 'papaparse';
 import { geocodeAddress } from '@/utils/geocoding';
-import { isPointInPolygon } from '@/utils/geometry';
-import { optimizeRoute, getDistance } from '@/utils/route';
+import { isPointInPolygon, getDistance } from '@/utils/geometry';
+
+import { SortableTreeItem } from '@/components/admin/TreeList';
+import { TerritoryManager } from '@/components/admin/TerritoryManager';
+import { APP_CONFIG } from '@/lib/config';
 import styles from './admin.module.css';
 
 const LeafletMap = dynamic(() => import('../../components/Map'), { ssr: false });
@@ -72,62 +75,13 @@ function getLevenshteinDistance(a: string, b: string): number {
     return matrix[b.length][a.length];
 }
 
-function SortableTreeItem({ tree, index, onEdit, onHighlight }: { tree: Tree, index: number, onEdit: (t: Tree) => void, onHighlight: (t: Tree) => void }) {
-    const {
-        attributes,
-        listeners,
-        setNodeRef,
-        transform,
-        transition,
-        isDragging
-    } = useSortable({ id: tree.id });
 
-    const style = {
-        transform: CSS.Transform.toString(transform),
-        transition,
-        zIndex: isDragging ? 1000 : 'auto',
-        opacity: isDragging ? 0.5 : 1,
-    };
-
-    return (
-        <div
-            ref={setNodeRef}
-            style={style}
-            className={styles.treeItem}
-            onClick={() => onHighlight(tree)}
-        >
-            <div {...attributes} {...listeners} className={styles.dragHandle}>
-                <GripVertical size={16} color="#64748b" />
-            </div>
-            <div style={{ flex: 1 }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                    <span className={styles.sequenceBadge}>{index + 1}</span>
-                    <strong>{tree.name}</strong>
-                </div>
-                <div style={{ color: '#94a3b8', fontSize: '0.8rem', marginLeft: '1.8rem' }}>
-                    {tree.address}
-                </div>
-                {tree.note && (
-                    <div style={{ color: '#eab308', fontSize: '0.8rem', marginLeft: '1.8rem', fontStyle: 'italic' }}>
-                        Note: {tree.note}
-                    </div>
-                )}
-            </div>
-            <button
-                className={styles.iconButton}
-                onClick={(e) => { e.stopPropagation(); onEdit(tree); }}
-            >
-                <Edit2 size={16} />
-            </button>
-        </div>
-    );
-}
 
 export default function AdminPage() {
     const [trees, setTrees] = useState<Tree[]>([]);
     const [territories, setTerritories] = useState<Territory[]>([]);
     const [loading, setLoading] = useState(true);
-    const [selectedTerritoryId, setSelectedTerritoryId] = useState<number | 'all'>('all');
+    const [selectedTerritoryId, setSelectedTerritoryId] = useState<number | 'all' | 'none'>('all');
     const [startAddress, setStartAddress] = useState('Dultplatz, Amberg');
 
     // Modals & Inputs
@@ -169,9 +123,37 @@ export default function AdminPage() {
 
     // Mobile View State
     const [mobileView, setMobileView] = useState<'map' | 'list'>('list');
+    const [editingTerritoryId, setEditingTerritoryId] = useState<number | null>(null);
+
+    const handleDrawPointDragEnd = (index: number, lat: number, lng: number) => {
+        setDrawPoints(prev => {
+            const newPoints = [...prev];
+            newPoints[index] = [lat, lng];
+            return newPoints;
+        });
+    };
+
+    const undoLastDrawPoint = () => {
+        setDrawPoints(prev => prev.slice(0, -1));
+    };
+
+    const editTerritory = (t: Territory) => {
+        if (t.polygon && t.polygon.length > 0) {
+            setDrawPoints(t.polygon);
+            setEditingTerritoryId(t.id);
+            setNewTerritoryName(t.name);
+            setNewTerritoryColor(t.color);
+            setIsDrawing(true);
+            setMobileView('map');
+        }
+    };
 
     const sensors = useSensors(
-        useSensor(PointerSensor),
+        useSensor(PointerSensor, {
+            activationConstraint: {
+                distance: 8,
+            },
+        }),
         useSensor(KeyboardSensor, {
             coordinateGetter: sortableKeyboardCoordinates,
         })
@@ -201,15 +183,32 @@ export default function AdminPage() {
         }
     };
 
+    const [searchTerm, setSearchTerm] = useState('');
+
     // Filtered trees for the list
     const visibleTrees = useMemo(() => {
-        let filtered = selectedTerritoryId === 'all'
-            ? trees
-            : trees.filter(t => t.territory_id === selectedTerritoryId);
+        let filtered = trees;
+        if (selectedTerritoryId === 'all') {
+            filtered = trees;
+        } else if (selectedTerritoryId === 'none') {
+            filtered = trees.filter(t => !t.territory_id);
+        } else {
+            filtered = trees.filter(t => t.territory_id === selectedTerritoryId);
+        }
+
+        // Search Filter
+        if (searchTerm) {
+            const lower = searchTerm.toLowerCase();
+            filtered = filtered.filter(t =>
+                t.name.toLowerCase().includes(lower) ||
+                t.address.toLowerCase().includes(lower) ||
+                (t.note && t.note.toLowerCase().includes(lower))
+            );
+        }
 
         // Sort by sequence
         return filtered.sort((a, b) => (a.sequence || 0) - (b.sequence || 0));
-    }, [trees, selectedTerritoryId]);
+    }, [trees, selectedTerritoryId, searchTerm]);
 
     const calculateRoute = async (territoryId: number) => {
         setLoading(true);
@@ -287,29 +286,81 @@ export default function AdminPage() {
     };
 
     const saveTerritory = async () => {
-        const res = await fetch('/api/territories', {
-            method: 'POST',
-            body: JSON.stringify({
-                name: newTerritoryName,
-                color: newTerritoryColor,
-                polygon: drawPoints
-            })
-        });
-        const { id } = await res.json();
-
-        const treesToUpdate = trees.filter(t => t.lat && t.lng && isPointInPolygon([t.lat, t.lng], drawPoints));
-        await Promise.all(treesToUpdate.map(t =>
-            fetch(`/api/trees/${t.id}`, {
+        if (editingTerritoryId) {
+            // Update existing
+            await fetch(`/api/territories/${editingTerritoryId}`, {
                 method: 'PUT',
-                body: JSON.stringify({ territory_id: id })
-            })
-        ));
+                body: JSON.stringify({
+                    name: newTerritoryName,
+                    color: newTerritoryColor,
+                    polygon: drawPoints
+                })
+            });
 
-        await calculateRoute(id);
+            // Reassign trees logic
+            // 1. Find trees that should be in this territory
+            const treesInside = trees.filter(t => t.lat && t.lng && isPointInPolygon([t.lat, t.lng], drawPoints));
+
+            // 2. Find trees currently in this territory but NOT in the new polygon (to unassign)
+            const treesToUnassign = trees.filter(t =>
+                t.territory_id === editingTerritoryId &&
+                t.lat && t.lng &&
+                !isPointInPolygon([t.lat, t.lng], drawPoints)
+            );
+
+            // Execute updates
+            const updates = [];
+
+            // Assign new ones
+            for (const t of treesInside) {
+                if (t.territory_id !== editingTerritoryId) {
+                    updates.push(fetch(`/api/trees/${t.id}`, {
+                        method: 'PUT',
+                        body: JSON.stringify({ territory_id: editingTerritoryId })
+                    }));
+                }
+            }
+
+            // Unassign old ones
+            for (const t of treesToUnassign) {
+                updates.push(fetch(`/api/trees/${t.id}`, {
+                    method: 'PUT',
+                    body: JSON.stringify({ territory_id: null })
+                }));
+            }
+
+            await Promise.all(updates);
+
+            await calculateRoute(editingTerritoryId);
+        } else {
+            // Create new
+            const res = await fetch('/api/territories', {
+                method: 'POST',
+                body: JSON.stringify({
+                    name: newTerritoryName,
+                    color: newTerritoryColor,
+                    polygon: drawPoints
+                })
+            });
+            const { id } = await res.json();
+
+            const treesToUpdate = trees.filter(t => t.lat && t.lng && isPointInPolygon([t.lat, t.lng], drawPoints));
+            await Promise.all(treesToUpdate.map(t =>
+                fetch(`/api/trees/${t.id}`, {
+                    method: 'PUT',
+                    body: JSON.stringify({ territory_id: id })
+                })
+            ));
+
+            await calculateRoute(id);
+        }
 
         setShowTerritoryModal(false);
         setNewTerritoryName('');
+        setNewTerritoryColor('#ff0000');
         setDrawPoints([]);
+        setIsDrawing(false);
+        setEditingTerritoryId(null);
         fetchData();
     };
 
@@ -372,9 +423,6 @@ export default function AdminPage() {
     };
 
     const optimizeTerritory = async (territoryId: number) => {
-        const territoryTrees = trees.filter(t => t.territory_id === territoryId);
-        if (territoryTrees.length === 0) return;
-
         setLoading(true);
         try {
             let startPoint = undefined;
@@ -385,18 +433,16 @@ export default function AdminPage() {
                 }
             }
 
-            const sorted = await optimizeRoute(territoryTrees, startPoint);
-
-            await Promise.all(sorted.map((t, index) =>
-                fetch(`/api/trees/${t.id}`, {
-                    method: 'PUT',
-                    body: JSON.stringify({ sequence: index })
-                })
-            ));
-
-            await calculateRoute(territoryId);
+            await fetch(`/api/territories/${territoryId}/optimize/route`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ startPoint })
+            });
 
             fetchData();
+        } catch (e) {
+            console.error(e);
+            alert('Fehler bei der Optimierung.');
         } finally {
             setLoading(false);
         }
@@ -477,6 +523,12 @@ export default function AdminPage() {
     };
 
     const deleteAllTrees = async () => {
+        const password = prompt('Bitte Passwort eingeben um ALLE Bäume zu löschen:');
+        if (password !== APP_CONFIG.adminPassword) {
+            alert('Falsches Passwort!');
+            return;
+        }
+
         if (!confirm('Wirklich ALLE Bäume löschen? Dies kann nicht rückgängig gemacht werden.')) return;
         await fetch('/api/trees', { method: 'DELETE' });
         fetchData();
@@ -687,48 +739,96 @@ export default function AdminPage() {
         setImportPreview([]);
     };
 
-    // ... (existing code)
+    const optimizeAll = async () => {
+        if (!confirm('Wirklich ALLE Gebiete optimieren? Das kann einen Moment dauern.')) return;
+        setLoading(true);
+        try {
+            await fetch('/api/admin/optimize-all', {
+                method: 'POST',
+                body: JSON.stringify({ action: 'optimize' })
+            });
+            fetchData();
+        } catch (e) {
+            console.error(e);
+            alert('Fehler beim Optimieren.');
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const calculateAll = async () => {
+        setLoading(true);
+        try {
+            await fetch('/api/admin/optimize-all', {
+                method: 'POST',
+                body: JSON.stringify({ action: 'calculate' })
+            });
+            fetchData();
+        } catch (e) {
+            console.error(e);
+            alert('Fehler beim Berechnen.');
+        } finally {
+            setLoading(false);
+        }
+    };
 
     return (
-        <div className={styles.container}>
-            {/* ... (existing code) */}
+        <div className={`${styles.container} ${mobileView === 'map' ? styles.mapViewActive : ''}`}>
+            {/* Mobile View Toggle */}
+            <div className={styles.mobileToggle}>
+                <button
+                    className={`${styles.toggleButton} ${mobileView === 'list' ? styles.active : ''}`}
+                    onClick={() => setMobileView('list')}
+                >
+                    Verwaltung
+                </button>
+                <button
+                    className={`${styles.toggleButton} ${mobileView === 'map' ? styles.active : ''}`}
+                    onClick={() => setMobileView('map')}
+                >
+                    Karte
+                </button>
+            </div>
 
             <div className={`${styles.sidebar} ${mobileView === 'map' ? styles.hiddenMobile : ''}`}>
-                {/* Mobile View Toggle */}
-                <div className={styles.mobileToggle}>
-                    <button
-                        className={`${styles.toggleButton} ${mobileView === 'list' ? styles.active : ''}`}
-                        onClick={() => setMobileView('list')}
-                    >
-                        Verwaltung
-                    </button>
-                    <button
-                        className={`${styles.toggleButton} ${mobileView === 'map' ? styles.active : ''}`}
-                        onClick={() => setMobileView('map')}
-                    >
-                        Karte
-                    </button>
-                </div>
-
-                <h2 className={styles.sidebarTitle}>Verwaltung</h2>
+                <h2 className={styles.sidebarTitle}>Filter & Aktionen</h2>
 
                 {/* Territory Selector */}
                 <div className={styles.filterSection}>
                     <select
                         className={styles.select}
                         value={selectedTerritoryId}
-                        onChange={(e) => setSelectedTerritoryId(e.target.value === 'all' ? 'all' : Number(e.target.value))}
+                        onChange={(e) => {
+                            const val = e.target.value;
+                            if (val === 'all' || val === 'none') setSelectedTerritoryId(val);
+                            else setSelectedTerritoryId(Number(val));
+                        }}
                     >
                         <option value="all">Alle Gebiete</option>
+                        <option value="none">Kein Gebiet</option>
                         {territories.map(t => (
                             <option key={t.id} value={t.id}>{t.name}</option>
                         ))}
                     </select>
+                    <div style={{ fontSize: '0.75rem', color: '#64748b', marginTop: '0.25rem' }}>
+                        Tipp: Klicke auf ein Gebiet in der Karte um es auszuwählen.
+                    </div>
+                </div>
+
+                {/* Search Input */}
+                <div className={styles.filterSection}>
+                    <input
+                        type="text"
+                        className={styles.input}
+                        value={searchTerm}
+                        onChange={(e) => setSearchTerm(e.target.value)}
+                        placeholder="Suche (Name, Adresse...)"
+                    />
                 </div>
 
                 {/* Start Address Input */}
                 <div className={styles.filterSection}>
-                    <label style={{ fontSize: '0.8rem', color: '#94a3b8', marginBottom: '0.25rem', display: 'block' }}>Startpunkt für Route:</label>
+                    <label className={styles.label}>Startpunkt für Route:</label>
                     <input
                         type="text"
                         className={styles.input}
@@ -743,41 +843,127 @@ export default function AdminPage() {
                         <span>Bäume</span>
                         <strong>{visibleTrees.length}</strong>
                     </div>
-                    {selectedTerritoryId !== 'all' && (
-                        <div className={styles.statItem}>
+                    {selectedTerritoryId !== 'all' && typeof selectedTerritoryId === 'number' && (
+                        <div className={styles.statItem} style={{ gap: '0.5rem', width: '100%' }}>
                             <button
-                                className={styles.iconButton}
-                                onClick={() => optimizeTerritory(selectedTerritoryId as number)}
+                                className={styles.button}
+                                onClick={() => optimizeTerritory(selectedTerritoryId)}
                                 title="Route für dieses Gebiet optimieren"
-                                style={{ color: '#3b82f6', width: '100%', justifyContent: 'center' }}
+                                style={{ background: '#3b82f6', width: '100%', fontSize: '0.8rem', padding: '0.5rem' }}
                             >
-                                <Settings size={16} style={{ marginRight: '0.5rem' }} /> Optimieren
+                                <Settings size={14} /> Optimieren
                             </button>
                             <button
-                                className={styles.iconButton}
-                                onClick={() => calculateRoute(selectedTerritoryId as number)}
+                                className={styles.button}
+                                onClick={() => calculateRoute(selectedTerritoryId)}
                                 title="Route neu berechnen (ohne Umsortieren)"
-                                style={{ color: '#10b981', width: '100%', justifyContent: 'center', marginTop: '0.5rem' }}
+                                style={{ background: '#10b981', width: '100%', fontSize: '0.8rem', padding: '0.5rem' }}
                             >
-                                <RefreshCw size={16} style={{ marginRight: '0.5rem' }} /> Route berechnen
+                                <RefreshCw size={14} /> Route
+                            </button>
+                            <button
+                                className={styles.button}
+                                onClick={() => {
+                                    const t = territories.find(terr => terr.id === selectedTerritoryId);
+                                    if (t) editTerritory(t);
+                                }}
+                                title="Gebiet bearbeiten"
+                                style={{ background: '#f59e0b', width: '100%', fontSize: '0.8rem', padding: '0.5rem' }}
+                            >
+                                <Edit2 size={14} /> Bearbeiten
+                            </button>
+                            <button
+                                className={styles.button}
+                                onClick={() => deleteTerritory(selectedTerritoryId)}
+                                title="Gebiet löschen"
+                                style={{ background: '#ef4444', width: '100%', fontSize: '0.8rem', padding: '0.5rem' }}
+                            >
+                                <Trash2 size={14} /> Löschen
                             </button>
                         </div>
                     )}
                 </div>
 
-
-
                 <div className={styles.actions}>
                     <button className={styles.button} onClick={() => setShowImportModal(true)}>
                         <Upload size={16} /> Import
                     </button>
-                    <button className={styles.button} onClick={startDrawing} disabled={isDrawing}>
-                        <Plus size={16} /> Gebiet
-                    </button>
-
+                    <TerritoryManager
+                        territories={territories}
+                        onSave={saveTerritory}
+                        onDelete={deleteTerritory}
+                        isDrawing={isDrawing}
+                        onStartDrawing={startDrawing}
+                        showModal={showTerritoryModal}
+                        onCloseModal={() => setShowTerritoryModal(false)}
+                    />
                 </div>
 
-                {/* Tree List with Drag and Drop */}
+                <div className={styles.actions} style={{ marginTop: 'auto', borderTop: '1px solid #334155', paddingTop: '1rem' }}>
+                    <button className={styles.button} onClick={optimizeAll} style={{ background: '#3b82f6' }}>
+                        <Settings size={16} /> Alle Optimieren
+                    </button>
+                    <button className={styles.button} onClick={calculateAll} style={{ background: '#10b981' }}>
+                        <RefreshCw size={16} /> Alle Routen
+                    </button>
+                </div>
+
+                <div style={{ marginTop: '1rem' }}>
+                    <button
+                        className={styles.button}
+                        style={{ background: '#ef4444', width: '100%' }}
+                        onClick={deleteAllTrees}
+                    >
+                        <Trash2 size={16} /> Alle Bäume löschen
+                    </button>
+                </div>
+            </div>
+
+            {/* Map Area */}
+            <div className={`${styles.mapContainer} ${mobileView === 'list' ? styles.hiddenMobile : ''}`}>
+                <LeafletMap
+                    trees={visibleTrees}
+                    territories={territories}
+                    onTreeClick={handleTreeClick}
+                    isDrawing={isDrawing}
+                    drawPoints={drawPoints}
+                    onDrawClick={handleDrawClick}
+                    onMarkerDragEnd={handleMarkerDragEnd}
+                    onDrawPointDragEnd={handleDrawPointDragEnd}
+                    onTerritoryClick={(id) => setSelectedTerritoryId(id)}
+                    center={mapCenter}
+                    zoom={mapZoom}
+                />
+
+                {isDrawing && (
+                    <div className={styles.drawingControls}>
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem' }}>
+                            <div style={{ fontWeight: 'bold', color: 'white' }}>
+                                {editingTerritoryId ? 'Gebiet bearbeiten' : 'Neues Gebiet'}
+                            </div>
+                            <div style={{ color: '#94a3b8', fontSize: '0.8rem' }}>
+                                {drawPoints.length} Punkte • Punkte verschiebbar
+                            </div>
+                        </div>
+                        <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
+                            <button className={styles.button} onClick={undoLastDrawPoint} title="Letzten Punkt entfernen" style={{ padding: '0.5rem' }}>
+                                <RotateCcw size={16} />
+                            </button>
+                            <button className={styles.button} onClick={finishDrawing} style={{ background: '#22c55e', padding: '0.5rem 1rem' }}>
+                                Fertig
+                            </button>
+                            <button className={styles.cancelButton} onClick={() => { setIsDrawing(false); setDrawPoints([]); setEditingTerritoryId(null); }} style={{ padding: '0.5rem 1rem' }}>
+                                Abbrechen
+                            </button>
+                        </div>
+                    </div>
+                )}
+            </div>
+
+            {/* Right Sidebar: Tree List */}
+            <div className={`${styles.rightSidebar} ${mobileView === 'map' ? styles.hiddenMobile : ''}`}>
+                <h2 className={styles.sidebarTitle}>Baumliste ({visibleTrees.length})</h2>
+
                 <div className={styles.treeListContainer}>
                     <DndContext
                         sensors={sensors}
@@ -802,44 +988,9 @@ export default function AdminPage() {
                     </DndContext>
 
                     {visibleTrees.length === 0 && (
-                        <div className={styles.emptyState}>Keine Bäume in diesem Gebiet</div>
+                        <div className={styles.emptyState}>Keine Bäume gefunden</div>
                     )}
                 </div>
-
-                <div style={{ marginTop: '1rem' }}>
-                    <button
-                        className={styles.button}
-                        style={{ background: '#ef4444', width: '100%' }}
-                        onClick={deleteAllTrees}
-                    >
-                        <Trash2 size={16} /> Alle Bäume löschen
-                    </button>
-                </div>
-            </div>
-
-            {/* Map Area */}
-            <div className={`${styles.mapContainer} ${mobileView === 'list' ? styles.hiddenMobile : ''}`}>
-                <LeafletMap
-                    trees={trees}
-                    territories={territories}
-                    onTreeClick={handleTreeClick}
-                    isDrawing={isDrawing}
-                    drawPoints={drawPoints}
-                    onDrawClick={handleDrawClick}
-                    onMarkerDragEnd={handleMarkerDragEnd}
-                    center={mapCenter}
-                    zoom={mapZoom}
-                />
-
-                {isDrawing && (
-                    <div className={styles.drawingControls}>
-                        <div style={{ marginBottom: '0.5rem' }}>Punkte: {drawPoints.length}</div>
-                        <div style={{ display: 'flex', gap: '0.5rem' }}>
-                            <button className={styles.button} onClick={finishDrawing}>Fertig</button>
-                            <button className={styles.cancelButton} onClick={() => { setIsDrawing(false); setDrawPoints([]); }}>Abbrechen</button>
-                        </div>
-                    </div>
-                )}
             </div>
 
             {/* Modals */}

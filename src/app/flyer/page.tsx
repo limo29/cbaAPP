@@ -102,51 +102,66 @@ export default function FlyerGenerator() {
     };
 
     const handleDownload = async (format: 'png' | 'pdf') => {
-        const element = document.querySelector(`.${styles.flyer}`) as HTMLElement;
-        if (!element) return;
+        const width = 2480; // A4 @ 300 DPI
+        const height = 3508; // A4 @ 300 DPI
 
-        // Temporarily remove transform to capture correctly
-        const originalTransform = element.style.transform;
-        const originalMargin = element.style.marginBottom;
-        const originalBoxShadow = element.style.boxShadow;
+        const canvas = document.createElement('canvas');
+        canvas.width = width;
+        canvas.height = height;
+        const ctx = canvas.getContext('2d');
+        if (!ctx) return;
 
-        element.style.transform = 'none';
-        element.style.marginBottom = '0';
-        element.style.boxShadow = 'none';
+        // 1. Draw Background
+        const img = new Image();
+        img.src = '/flyer-template.svg';
 
-        try {
-            // Dynamically import html2canvas and jspdf to avoid SSR issues
-            const html2canvas = (await import('html2canvas')).default;
+        await new Promise<void>((resolve, reject) => {
+            img.onload = () => resolve();
+            img.onerror = reject;
+        });
+
+        // Draw image covering the canvas (object-fit: cover equivalent)
+        const scale = Math.max(width / img.width, height / img.height);
+        const x = (width / 2) - (img.width / 2) * scale;
+        const y = (height / 2) - (img.height / 2) * scale;
+        ctx.drawImage(img, x, y, img.width * scale, img.height * scale);
+
+        // 2. Draw Text Elements
+        Object.values(elements).forEach(el => {
+            ctx.save();
+
+            // Calculate position
+            const posX = (el.x / 100) * width;
+            const posY = (el.y / 100) * height;
+
+            ctx.translate(posX, posY);
+            ctx.rotate((el.rotation * Math.PI) / 180);
+
+            // Calculate font size (approximate conversion from pt to px at 300 DPI)
+            // A4 width is ~595pt. Canvas width is 2480px. Ratio ~ 4.16
+            const fontSizePx = el.fontSize * 4.16;
+            ctx.font = `${fontSizePx}px ${el.fontFamily.split(',')[0]}`;
+            ctx.fillStyle = el.color;
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+
+            ctx.fillText(el.value, 0, 0);
+
+            ctx.restore();
+        });
+
+        // 3. Export
+        if (format === 'png') {
+            const link = document.createElement('a');
+            link.download = 'flyer.png';
+            link.href = canvas.toDataURL('image/png');
+            link.click();
+        } else {
             const jsPDF = (await import('jspdf')).default;
-
-            const canvas = await html2canvas(element, {
-                scale: 2, // Higher quality
-                useCORS: true,
-                logging: false,
-                backgroundColor: '#ffffff'
-            });
-
-            if (format === 'png') {
-                const link = document.createElement('a');
-                link.download = 'flyer.png';
-                link.href = canvas.toDataURL('image/png');
-                link.click();
-            } else {
-                const imgData = canvas.toDataURL('image/png');
-                const pdf = new jsPDF('p', 'mm', 'a4');
-                const pdfWidth = pdf.internal.pageSize.getWidth();
-                const pdfHeight = pdf.internal.pageSize.getHeight();
-                pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth, pdfHeight);
-                pdf.save('flyer.pdf');
-            }
-        } catch (error) {
-            console.error('Export failed:', error);
-            alert('Export fehlgeschlagen');
-        } finally {
-            // Restore styles
-            element.style.transform = originalTransform;
-            element.style.marginBottom = originalMargin;
-            element.style.boxShadow = originalBoxShadow;
+            const pdf = new jsPDF('p', 'mm', 'a4');
+            const imgData = canvas.toDataURL('image/jpeg', 0.95); // JPEG slightly smaller/faster for PDF
+            pdf.addImage(imgData, 'JPEG', 0, 0, 210, 297);
+            pdf.save('flyer.pdf');
         }
     };
 
@@ -289,7 +304,7 @@ export default function FlyerGenerator() {
                     {Object.values(elements).map(el => (
                         <div
                             key={el.id}
-                            className={styles.draggableText}
+                            className={`${styles.draggableText} ${selectedId === el.id ? styles.selected : ''}`}
                             style={{
                                 left: `${el.x}%`,
                                 top: `${el.y}%`,
@@ -297,7 +312,6 @@ export default function FlyerGenerator() {
                                 transform: `translate(-50%, -50%) rotate(${el.rotation}deg)`,
                                 color: el.color,
                                 fontFamily: el.fontFamily,
-                                border: selectedId === el.id ? '2px dashed rgba(59, 130, 246, 0.5)' : 'none',
                                 padding: '5px'
                             }}
                             onClick={() => setSelectedId(el.id)}
