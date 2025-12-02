@@ -1,0 +1,27 @@
+version: '3'
+services:
+  web:
+    build: .
+    container_name: cba_app
+    restart: always
+    volumes:
+      - ./data:/app/data
+    # Ports are not exposed to host, only to internal network for Caddy
+
+  caddy:
+    image: caddy:2-alpine
+    container_name: cba_caddy
+    restart: always
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile
+      - caddy_data:/data
+      - caddy_config:/config
+    depends_on:
+      - web
+
+volumes:
+  caddy_data:
+  caddy_config:
