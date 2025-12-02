@@ -1,0 +1,16 @@
+{
+    "name": "Christbaum Abhol-Aktion",
+    "short_name": "CBA App",
+    "description": "App zur Organisation der Christbaum-Sammelaktion",
+    "start_url": "/",
+    "display": "standalone",
+    "background_color": "#ffffff",
+    "theme_color": "#166534",
+    "icons": [
+        {
+            "src": "/icons/icon.svg",
+            "sizes": "any",
+            "type": "image/svg+xml"
+        }
+    ]
+}

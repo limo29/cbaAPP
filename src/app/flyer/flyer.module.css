@@ -133,15 +133,6 @@
         margin: 0;
     }
 
-    body,
-    html {
-        margin: 0;
-        padding: 0;
-        width: 100%;
-        height: 100%;
-        background: white;
-    }
-
     /* Hide UI elements */
     .controls,
     .previewContainer {
@@ -191,10 +182,5 @@
         outline: none !important;
         background-color: transparent !important;
         border: none !important;
-    }
-
-    /* Hide everything else */
-    body>*:not(.container) {
-        display: none !important;
     }
 }

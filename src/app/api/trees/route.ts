@@ -26,8 +26,8 @@ export async function POST(request: Request) {
     const trees = Array.isArray(body) ? body : [body];
 
     const insert = db.prepare(`
-    INSERT INTO trees (name, address, phone, note, lat, lng, territory_id, status, sequence)
-    VALUES (@name, @address, @phone, @note, @lat, @lng, @territory_id, 'open', 0)
+    INSERT INTO trees (name, address, phone, note, payment_method, lat, lng, territory_id, status, sequence)
+    VALUES (@name, @address, @phone, @note, @payment_method, @lat, @lng, @territory_id, 'open', 0)
   `);
 
     const insertMany = db.transaction((trees) => {
@@ -37,6 +37,7 @@ export async function POST(request: Request) {
                 address: tree.address,
                 phone: tree.phone || '',
                 note: tree.note || '',
+                payment_method: tree.payment_method || '',
                 lat: tree.lat || null,
                 lng: tree.lng || null,
                 territory_id: tree.territory_id || null
