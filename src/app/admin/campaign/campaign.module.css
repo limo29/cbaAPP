@@ -1,0 +1,381 @@
+.container {
+    padding: 2rem;
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+.header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 2rem;
+}
+
+.titleGroup {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.backButton {
+    padding: 0.5rem;
+    border-radius: 50%;
+    background: var(--card-bg);
+    border: 1px solid var(--border);
+    color: var(--foreground);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.2s;
+}
+
+.backButton:hover {
+    background: var(--card-hover);
+}
+
+.title {
+    font-size: 1.5rem;
+    font-weight: bold;
+}
+
+.actions {
+    display: flex;
+    gap: 0.5rem;
+}
+
+.actionButton {
+    padding: 0.5rem;
+    border-radius: 50%;
+    background: var(--card-bg);
+    border: 1px solid var(--border);
+    color: var(--foreground);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.2s;
+}
+
+.actionButton:hover {
+    background: var(--card-hover);
+}
+
+.section {
+    background: var(--card-bg);
+    border-radius: 0.5rem;
+    padding: 1.5rem;
+    margin-bottom: 2rem;
+    border: 1px solid var(--border);
+}
+
+.sectionTitle {
+    font-size: 1.25rem;
+    font-weight: 600;
+    margin-bottom: 1rem;
+}
+
+.importControls {
+    display: flex;
+    gap: 1rem;
+    align-items: flex-end;
+}
+
+.fileInput {
+    display: block;
+    width: 100%;
+    padding: 0.5rem;
+    background: var(--background);
+    border: 1px solid var(--border);
+    border-radius: 0.25rem;
+    color: var(--foreground);
+}
+
+.primaryButton {
+    background: var(--primary);
+    color: #000;
+    padding: 0.5rem 1rem;
+    border-radius: 0.25rem;
+    border: none;
+    font-weight: 600;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    transition: opacity 0.2s;
+}
+
+.primaryButton:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.primaryButton:hover:not(:disabled) {
+    opacity: 0.9;
+}
+
+.successMessage {
+    margin-top: 1rem;
+    color: var(--primary);
+    font-size: 0.875rem;
+}
+
+.filterGroup {
+    display: flex;
+    gap: 0.5rem;
+    margin-bottom: 1rem;
+    overflow-x: auto;
+    padding-bottom: 0.5rem;
+}
+
+.filterButton {
+    padding: 0.5rem 1rem;
+    border-radius: 9999px;
+    border: 1px solid var(--border);
+    background: var(--card-bg);
+    color: var(--foreground);
+    cursor: pointer;
+    white-space: nowrap;
+    transition: all 0.2s;
+}
+
+.filterButton:hover {
+    background: var(--card-hover);
+}
+
+.filterButton.active {
+    background: var(--primary);
+    color: #000;
+    border-color: var(--primary);
+}
+
+.tableContainer {
+    background: var(--card-bg);
+    border-radius: 0.5rem;
+    overflow: hidden;
+    border: 1px solid var(--border);
+}
+
+.table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.th {
+    padding: 1rem;
+    text-align: left;
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: #94a3b8;
+    background: var(--background);
+    border-bottom: 1px solid var(--border);
+}
+
+.td {
+    padding: 1rem;
+    border-bottom: 1px solid var(--border);
+    color: var(--foreground);
+}
+
+.tr:last-child .td {
+    border-bottom: none;
+}
+
+.tr:hover {
+    background: rgba(255, 255, 255, 0.05);
+}
+
+.tr.called {
+    background: rgba(234, 179, 8, 0.1);
+}
+
+.phoneLink {
+    color: var(--primary);
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+}
+
+.phoneLink:hover {
+    text-decoration: underline;
+}
+
+.badge {
+    padding: 0.25rem 0.5rem;
+    border-radius: 9999px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    display: inline-block;
+}
+
+.badge.open {
+    background: #334155;
+    color: #fff;
+}
+
+.badge.called {
+    background: #fef08a;
+    color: #854d0e;
+}
+
+.badge.registered {
+    background: #bbf7d0;
+    color: #166534;
+}
+
+.badge.not_reached {
+    background: #fed7aa;
+    color: #9a3412;
+}
+
+.badge.deleted {
+    background: #fecaca;
+    color: #991b1b;
+}
+
+.actionGroup {
+    display: flex;
+    gap: 0.5rem;
+}
+
+.iconButton {
+    padding: 0.5rem;
+    border-radius: 0.25rem;
+    border: none;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: opacity 0.2s;
+}
+
+.iconButton:hover {
+    opacity: 0.8;
+}
+
+.btnYellow {
+    background: #fef08a;
+    color: #854d0e;
+}
+
+.btnOrange {
+    background: #fed7aa;
+    color: #9a3412;
+}
+
+.btnGreen {
+    background: #bbf7d0;
+    color: #166534;
+}
+
+.btnRed {
+    background: #fecaca;
+    color: #991b1b;
+}
+
+.loading {
+    text-align: center;
+    padding: 2rem;
+    color: #94a3b8;
+}
+
+@media (max-width: 768px) {
+    .container {
+        padding: 1rem;
+    }
+
+    .header {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 1rem;
+    }
+
+    .titleGroup {
+        justify-content: space-between;
+    }
+
+    .actions {
+        justify-content: flex-end;
+    }
+
+    .importControls {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .primaryButton {
+        justify-content: center;
+        padding: 0.75rem;
+    }
+
+    .tableContainer {
+        background: transparent;
+        border: none;
+    }
+
+    /* Table to Card transformation */
+    .table thead {
+        display: none;
+    }
+
+    .table,
+    .table tbody,
+    .tr,
+    .td {
+        display: block;
+        width: 100%;
+    }
+
+    .tr {
+        margin-bottom: 1rem;
+        background: var(--card-bg);
+        border: 1px solid var(--border);
+        border-radius: 0.5rem;
+        padding: 1rem;
+        position: relative;
+    }
+
+    .td {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 0.5rem 0;
+        border-bottom: 1px solid var(--border);
+        text-align: right;
+    }
+
+    .td:last-child {
+        border-bottom: none;
+        padding-top: 1rem;
+        margin-top: 0.5rem;
+        justify-content: center;
+    }
+
+    .td::before {
+        content: attr(data-label);
+        font-weight: 600;
+        text-transform: uppercase;
+        font-size: 0.75rem;
+        color: #94a3b8;
+        margin-right: 1rem;
+        text-align: left;
+    }
+
+    /* Hide label for actions column */
+    .td:last-child::before {
+        display: none;
+    }
+
+    .actionGroup {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 0.5rem;
+        width: 100%;
+    }
+
+    .iconButton {
+        width: 100%;
+        height: 48px;
+        /* Larger touch target */
+    }
+}

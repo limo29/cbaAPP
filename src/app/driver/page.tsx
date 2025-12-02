@@ -8,7 +8,12 @@ import { Navigation, Check, X } from 'lucide-react';
 interface Tree {
     id: number;
     name: string;
+    first_name?: string;
     address: string;
+    zip?: string;
+    city?: string;
+    phone?: string;
+    payment_method?: string;
     lat: number;
     lng: number;
     status: string;
@@ -189,10 +194,34 @@ export default function DriverPage() {
                         <div className={styles.cardContent}>
                             <div className={styles.cardHeader}>
                                 <span className={styles.sequence}>{index + 1}</span>
-                                <span className={styles.name}>{tree.name}</span>
+                                <span className={styles.name}>
+                                    {tree.first_name} {tree.name}
+                                </span>
                             </div>
-                            <div className={styles.address}>{tree.address}</div>
-                            {tree.note && <div className={styles.note}>{tree.note}</div>}
+
+                            <div className={styles.address}>
+                                {tree.address}
+                                {tree.zip && tree.city && <div style={{ fontSize: '0.9rem', color: '#94a3b8' }}>{tree.zip} {tree.city}</div>}
+                            </div>
+
+                            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem', marginTop: '0.5rem' }}>
+                                {tree.phone && (
+                                    <div style={{ fontSize: '0.85rem', background: '#334155', padding: '0.2rem 0.5rem', borderRadius: '4px' }}>
+                                        📞 {tree.phone}
+                                    </div>
+                                )}
+                                {tree.payment_method && (
+                                    <div style={{ fontSize: '0.85rem', background: tree.payment_method === 'Baum' ? '#166534' : '#334155', padding: '0.2rem 0.5rem', borderRadius: '4px' }}>
+                                        💰 {tree.payment_method}
+                                    </div>
+                                )}
+                            </div>
+
+                            {tree.note && (
+                                <div className={styles.note} style={{ marginTop: '0.5rem', color: '#facc15' }}>
+                                    📝 {tree.note}
+                                </div>
+                            )}
                         </div>
                         <div className={styles.cardActions}>
                             <button className={styles.actionButton} onClick={(e) => { e.stopPropagation(); openNavigation(tree.lat, tree.lng); }} style={{ background: '#3b82f6' }}>

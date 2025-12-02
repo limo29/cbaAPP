@@ -19,6 +19,8 @@ interface MapProps {
     draggable?: boolean;
     onMarkerDragEnd?: (treeId: number, lat: number, lng: number) => void;
     showRoute?: boolean;
+    onDrawPointDragEnd?: (index: number, lat: number, lng: number) => void;
+    onTerritoryClick?: (id: number) => void;
 }
 
 function MapEvents({ isDrawing, onDrawClick }: { isDrawing: boolean, onDrawClick?: (latlng: [number, number]) => void }) {
@@ -39,6 +41,30 @@ function MapController({ center, zoom }: { center?: [number, number], zoom?: num
             map.flyTo(center, zoom || map.getZoom());
         }
     }, [center, zoom, map]);
+    return null;
+}
+
+function MapInvalidator() {
+    const map = useMap();
+    useEffect(() => {
+        const observer = new ResizeObserver(() => {
+            map.invalidateSize();
+        });
+        observer.observe(map.getContainer());
+        return () => observer.disconnect();
+    }, [map]);
+
+    // Also invalidate on mount/update just in case
+    useEffect(() => {
+        map.invalidateSize();
+        // Force redraw of vector layers
+        map.eachLayer(layer => {
+            if (layer instanceof L.Path) {
+                layer.redraw();
+            }
+        });
+    });
+
     return null;
 }
 
@@ -76,7 +102,9 @@ export default function Map({
     drawPoints = [],
     draggable = false,
     onMarkerDragEnd,
-    showRoute = false
+    showRoute = false,
+    onDrawPointDragEnd,
+    onTerritoryClick
 }: MapProps) {
 
     const [treeDisplayInfo, setTreeDisplayInfo] = useState<Record<number, { number: number, color: string }>>({});
@@ -116,6 +144,7 @@ export default function Map({
             />
 
             <MapController center={center} zoom={zoom} />
+            <MapInvalidator />
             <MapEvents isDrawing={isDrawing} onDrawClick={onDrawClick} />
 
             {territories.map((t) => (
@@ -123,6 +152,9 @@ export default function Map({
                     key={t.id}
                     positions={t.polygon}
                     pathOptions={{ color: t.color, fillOpacity: 0.2 }}
+                    eventHandlers={{
+                        click: () => onTerritoryClick && onTerritoryClick(t.id)
+                    }}
                 >
                     <Popup>
                         <div style={{ color: 'black' }}>
@@ -138,7 +170,21 @@ export default function Map({
                 <Polygon positions={drawPoints} pathOptions={{ color: 'orange', dashArray: '5, 5' }} />
             )}
             {drawPoints.map((p, i) => (
-                <Marker key={`draw-${i}`} position={p} opacity={0.6} />
+                <Marker
+                    key={`draw-${i}`}
+                    position={p}
+                    opacity={0.8}
+                    draggable={isDrawing}
+                    eventHandlers={{
+                        dragend: (e) => {
+                            if (onDrawPointDragEnd) {
+                                const marker = e.target;
+                                const position = marker.getLatLng();
+                                onDrawPointDragEnd(i, position.lat, position.lng);
+                            }
+                        }
+                    }}
+                />
             ))}
 
             {/* Routes per Territory */}

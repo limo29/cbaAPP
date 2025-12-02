@@ -48,7 +48,17 @@ db.exec(`
     responsible TEXT,
     is_completed INTEGER DEFAULT 0
   );
-`);
+
+  CREATE TABLE IF NOT EXISTS campaign_entries (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    name TEXT,
+    address TEXT,
+    phone TEXT,
+    status TEXT DEFAULT 'open', -- open, called, registered, not_reached, deleted
+    last_updated DATETIME DEFAULT CURRENT_TIMESTAMP
+  );
+`
+);
 
 // Migration: Add route_geometry column if it doesn't exist
 try {

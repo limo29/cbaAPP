@@ -5,6 +5,7 @@ import dynamic from 'next/dynamic';
 import { ArrowLeft, MapPin } from 'lucide-react';
 import Link from 'next/link';
 import styles from './register.module.css';
+import { APP_CONFIG } from '@/lib/config';
 
 // Dynamically import Map component to avoid SSR issues
 const Map = dynamic(() => import('@/components/Map'), {
@@ -17,11 +18,11 @@ export default function RegisterPage() {
         name: '',
         first_name: '',
         address: '',
-        zip: '92224',
-        city: 'Amberg', // Default city
+        zip: APP_CONFIG.defaultZip,
+        city: APP_CONFIG.defaultCity, // Default city
         phone: '',
         email: '',
-        payment_method: 'Bar',
+        payment_method: 'Baum',
         note: ''
     });
 
@@ -87,11 +88,11 @@ export default function RegisterPage() {
                 name: '',
                 first_name: '',
                 address: '',
-                zip: '92224',
-                city: 'Amberg',
+                zip: APP_CONFIG.defaultZip,
+                city: APP_CONFIG.defaultCity,
                 phone: '',
                 email: '',
-                payment_method: 'Bar',
+                payment_method: 'Baum',
                 note: ''
             });
             setCoordinates(null);
@@ -249,7 +250,7 @@ export default function RegisterPage() {
                         value={formData.payment_method}
                         onChange={e => setFormData({ ...formData, payment_method: e.target.value })}
                     >
-                        <option value="Bar">Bar (bei Abholung)</option>
+                        <option value="Baum">Baum</option>
                         <option value="Vorkasse">Vorkasse</option>
                         <option value="Überweisung">Überweisung</option>
                     </select>

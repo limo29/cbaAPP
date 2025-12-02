@@ -3,373 +3,224 @@
     height: 100vh;
     width: 100vw;
     overflow: hidden;
-    padding-bottom: 80px;
-    /* Navbar space */
+    background-color: #0f172a;
 }
 
 .sidebar {
     width: 300px;
-    background: var(--card-bg);
-    border-right: 1px solid var(--border);
+    background: #1e293b;
+    border-right: 1px solid #334155;
     display: flex;
     flex-direction: column;
-    padding: 1rem;
-    gap: 1rem;
+    padding: 1.5rem;
+    gap: 1.5rem;
     z-index: 10;
-    transition: transform 0.3s ease-in-out;
+    box-shadow: 4px 0 24px rgba(0, 0, 0, 0.2);
+    overflow-y: auto;
+    order: 1;
+}
+
+.rightSidebar {
+    width: 350px;
+    background: #1e293b;
+    border-left: 1px solid #334155;
+    display: flex;
+    flex-direction: column;
+    padding: 1.5rem;
+    gap: 1.5rem;
+    z-index: 10;
+    box-shadow: -4px 0 24px rgba(0, 0, 0, 0.2);
+    overflow-y: auto;
+    order: 3;
 }
 
 .sidebarTitle {
-    font-size: 1.5rem;
-    font-weight: bold;
-    color: var(--primary);
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: #f8fafc;
+    margin-bottom: 0.5rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
 }
 
 .stats {
     display: grid;
     grid-template-columns: 1fr 1fr;
-    gap: 0.5rem;
-    padding-bottom: 1rem;
-    border-bottom: 1px solid var(--border);
+    gap: 0.75rem;
+    padding: 1rem;
+    background: #0f172a;
+    border-radius: 0.75rem;
+    border: 1px solid #334155;
 }
 
 .statItem {
-    background: rgba(255, 255, 255, 0.05);
-    padding: 0.5rem;
-    border-radius: 0.5rem;
     display: flex;
     flex-direction: column;
     align-items: center;
+    gap: 0.25rem;
+}
+
+.statItem span {
+    font-size: 0.75rem;
+    color: #94a3b8;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.statItem strong {
+    font-size: 1.5rem;
+    color: #f8fafc;
 }
 
 .actions {
-    display: flex;
-    gap: 0.5rem;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.75rem;
 }
 
 .button {
-    flex: 1;
     display: flex;
     align-items: center;
     justify-content: center;
     gap: 0.5rem;
-    padding: 0.5rem;
+    padding: 0.75rem;
     border-radius: 0.5rem;
     border: none;
-    background: var(--primary);
-    color: #000;
-    font-weight: bold;
+    background: #3b82f6;
+    color: white;
+    font-weight: 600;
+    font-size: 0.9rem;
     cursor: pointer;
-    transition: opacity 0.2s;
+    transition: all 0.2s;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
 .button:hover {
-    opacity: 0.9;
+    filter: brightness(1.1);
+    transform: translateY(-1px);
 }
 
-.territoryList {
+.button:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    transform: none;
+}
+
+.filterSection {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.label {
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: #94a3b8;
+}
+
+.select,
+.input {
+    background: #0f172a;
+    color: #f8fafc;
+    border: 1px solid #334155;
+    padding: 0.75rem;
+    border-radius: 0.5rem;
+    font-size: 0.95rem;
+    width: 100%;
+    transition: border-color 0.2s;
+}
+
+.select:focus,
+.input:focus {
+    outline: none;
+    border-color: #3b82f6;
+}
+
+.treeListContainer {
     flex: 1;
     overflow-y: auto;
     display: flex;
     flex-direction: column;
     gap: 0.5rem;
+    padding-right: 0.5rem;
+    /* Space for scrollbar */
 }
 
-.territoryItem {
+/* Custom Scrollbar */
+.treeListContainer::-webkit-scrollbar {
+    width: 6px;
+}
+
+.treeListContainer::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.treeListContainer::-webkit-scrollbar-thumb {
+    background: #334155;
+    border-radius: 3px;
+}
+
+.treeItem {
     padding: 0.75rem;
-    background: rgba(255, 255, 255, 0.05);
+    background: #0f172a;
+    border: 1px solid #334155;
     border-radius: 0.5rem;
-    border-left: 4px solid transparent;
     display: flex;
-    justify-content: space-between;
     align-items: center;
+    gap: 0.75rem;
+    transition: all 0.2s;
 }
 
-.territoryCount {
-    font-size: 0.8rem;
-    color: #94a3b8;
+.treeItem:hover {
+    border-color: #475569;
+    transform: translateX(2px);
+}
+
+.sequenceBadge {
+    background: #3b82f6;
+    color: white;
+    font-size: 0.75rem;
+    font-weight: bold;
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.dragHandle {
+    touch-action: none;
+    cursor: grab;
+    padding: 0.5rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.iconButton {
+    background: transparent;
+    border: none;
+    color: #64748b;
+    cursor: pointer;
+    padding: 0.4rem;
+    border-radius: 0.4rem;
+    transition: all 0.2s;
+}
+
+.iconButton:hover {
+    background: rgba(255, 255, 255, 0.1);
+    color: #f8fafc;
 }
 
 .mapContainer {
     flex: 1;
     height: 100%;
     position: relative;
-}
-
-.modalOverlay {
-    position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: rgba(0, 0, 0, 0.7);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    z-index: 1000;
-}
-
-.modal {
-    background: var(--card-bg);
-    padding: 2rem;
-    border-radius: 1rem;
-    width: 90%;
-    max-width: 600px;
-    display: flex;
-    flex-direction: column;
-    gap: 1rem;
-    border: 1px solid var(--border);
-}
-
-.textarea {
-    width: 100%;
-    height: 200px;
-    background: rgba(0, 0, 0, 0.2);
-    border: 1px solid var(--border);
-    color: var(--foreground);
-    padding: 1rem;
-    border-radius: 0.5rem;
-    resize: vertical;
-}
-
-.modalActions {
-    display: flex;
-    justify-content: flex-end;
-    gap: 1rem;
-}
-
-.cancelButton {
-    background: transparent;
-    border: 1px solid var(--border);
-    color: var(--foreground);
-    padding: 0.5rem 1rem;
-    border-radius: 0.5rem;
-    cursor: pointer;
-}
-
-.progressBar {
-    width: 100%;
-    height: 0.5rem;
-    background: rgba(255, 255, 255, 0.1);
-    border-radius: 1rem;
-    overflow: hidden;
-}
-
-.progressFill {
-    height: 100%;
-    background: var(--primary);
-    transition: width 0.2s;
-}
-
-/* New Classes */
-.select {
-    background: var(--background);
-    color: var(--foreground);
-    border: 1px solid var(--border);
-    padding: 0.5rem;
-    border-radius: 0.5rem;
-    font-size: 1rem;
-    width: 100%;
-}
-
-.input {
-    background: var(--background);
-    color: var(--foreground);
-    border: 1px solid var(--border);
-    padding: 0.5rem;
-    border-radius: 0.5rem;
-    font-size: 1rem;
-    width: 100%;
-}
-
-.filterSection {
-    margin-bottom: 1rem;
-}
-
-.treeListContainer {
-    flex: 1;
-    overflow-y: auto;
-    display: flex;
-    flex-direction: column;
-    gap: 0.5rem;
-    border-top: 1px solid var(--border);
-    padding-top: 1rem;
-    margin-top: 1rem;
-}
-
-.treeItem {
-    padding: 0.5rem;
-    background: rgba(255, 255, 255, 0.05);
-    border-radius: 0.5rem;
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    cursor: default;
-    border: 1px solid transparent;
-}
-
-.treeItem:hover {
-    border-color: var(--border);
-}
-
-.dragHandle {
-    cursor: grab;
-    padding: 0.25rem;
-    display: flex;
-    align-items: center;
-}
-
-.dragHandle:active {
-    cursor: grabbing;
-}
-
-.sequenceBadge {
-    background: var(--primary);
-    color: #000;
-    font-size: 0.75rem;
-    font-weight: bold;
-    width: 20px;
-    height: 20px;
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
-
-.iconButton {
-    background: transparent;
-    border: none;
-    color: #94a3b8;
-    cursor: pointer;
-    padding: 0.25rem;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    border-radius: 0.25rem;
-}
-
-.iconButton:hover {
-    background: rgba(255, 255, 255, 0.1);
-    color: #fff;
-}
-
-.emptyState {
-    text-align: center;
-    border-radius: 0.5rem;
-    cursor: pointer;
-}
-
-.progressBar {
-    width: 100%;
-    height: 0.5rem;
-    background: rgba(255, 255, 255, 0.1);
-    border-radius: 1rem;
-    overflow: hidden;
-}
-
-.progressFill {
-    height: 100%;
-    background: var(--primary);
-    transition: width 0.2s;
-}
-
-/* New Classes */
-.select {
-    background: var(--background);
-    color: var(--foreground);
-    border: 1px solid var(--border);
-    padding: 0.5rem;
-    border-radius: 0.5rem;
-    font-size: 1rem;
-    width: 100%;
-}
-
-.input {
-    background: var(--background);
-    color: var(--foreground);
-    border: 1px solid var(--border);
-    padding: 0.5rem;
-    border-radius: 0.5rem;
-    font-size: 1rem;
-    width: 100%;
-}
-
-.filterSection {
-    margin-bottom: 1rem;
-}
-
-.treeListContainer {
-    flex: 1;
-    overflow-y: auto;
-    display: flex;
-    flex-direction: column;
-    gap: 0.5rem;
-    border-top: 1px solid var(--border);
-    padding-top: 1rem;
-    margin-top: 1rem;
-}
-
-.treeItem {
-    padding: 0.5rem;
-    background: rgba(255, 255, 255, 0.05);
-    border-radius: 0.5rem;
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    cursor: default;
-    border: 1px solid transparent;
-}
-
-.treeItem:hover {
-    border-color: var(--border);
-}
-
-.dragHandle {
-    cursor: grab;
-    padding: 0.25rem;
-    display: flex;
-    align-items: center;
-}
-
-.dragHandle:active {
-    cursor: grabbing;
-}
-
-.sequenceBadge {
-    background: var(--primary);
-    color: #000;
-    font-size: 0.75rem;
-    font-weight: bold;
-    width: 20px;
-    height: 20px;
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
-
-.iconButton {
-    background: transparent;
-    border: none;
-    color: #94a3b8;
-    cursor: pointer;
-    padding: 0.25rem;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    border-radius: 0.25rem;
-}
-
-.iconButton:hover {
-    background: rgba(255, 255, 255, 0.1);
-    color: #fff;
-}
-
-.emptyState {
-    text-align: center;
-    color: #64748b;
-    padding: 2rem;
-    font-style: italic;
+    background: #0f172a;
+    order: 2;
 }
 
 .drawingControls {
@@ -385,12 +236,7 @@
     gap: 1rem;
     align-items: center;
     border: 1px solid #334155;
-}
-
-.colorPicker {
-    display: flex;
-    align-items: center;
-    gap: 1rem;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
 }
 
 .mobileToggle {
@@ -401,25 +247,41 @@
 @media (max-width: 768px) {
     .container {
         flex-direction: column;
-        padding-top: 50px;
-        /* Space for top toggle */
-        padding-bottom: 60px;
-        /* Space for bottom nav */
+        padding-top: 114px;
+        padding-bottom: 0;
+        height: auto;
+        min-height: 100vh;
+        overflow-y: auto;
+        overflow-x: hidden;
+    }
+
+    .container.mapViewActive {
         height: 100vh;
-        height: 100dvh;
-        /* Dynamic viewport height for mobile */
+        overflow: hidden;
+    }
+
+    .sidebar,
+    .rightSidebar {
+        width: 100%;
+        height: auto;
+        border-right: none;
+        border-left: none;
+        padding-bottom: 2rem;
+        order: unset;
+        box-shadow: none;
+        overflow-y: visible;
     }
 
     .mobileToggle {
         display: flex;
         position: fixed;
-        top: 0;
+        top: 64px;
         left: 0;
         right: 0;
         height: 50px;
-        background: var(--card-bg);
-        z-index: 100;
-        border-bottom: 1px solid var(--border);
+        background: #1e293b;
+        z-index: 900;
+        border-bottom: 1px solid #334155;
     }
 
     .toggleButton {
@@ -427,37 +289,97 @@
         background: transparent;
         border: none;
         color: #94a3b8;
-        font-weight: bold;
+        font-weight: 600;
         cursor: pointer;
         border-bottom: 2px solid transparent;
-        font-size: 1rem;
+        font-size: 0.95rem;
     }
 
     .toggleButton.active {
-        color: var(--primary);
-        border-bottom-color: var(--primary);
-        background: rgba(255, 255, 255, 0.02);
-    }
-
-    .sidebar {
-        width: 100%;
-        height: 100%;
-        border-right: none;
-        padding-bottom: 2rem;
-        /* Extra padding for scrolling */
-    }
-
-    .treeListContainer {
-        padding-bottom: 4rem;
-        /* Ensure last items are visible above bottom nav */
-    }
-
-    .mapContainer {
-        width: 100%;
-        height: 100%;
+        color: #3b82f6;
+        border-bottom-color: #3b82f6;
+        background: rgba(59, 130, 246, 0.05);
     }
 
     .hiddenMobile {
         display: none !important;
     }
+
+    .mapContainer {
+        height: calc(100vh - 114px);
+        width: 100%;
+        display: block;
+    }
+
+    .mapViewActive .mapContainer {
+        height: 100%;
+        flex: 1;
+    }
+}
+
+/* Modal Styles */
+.modalOverlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.8);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 2000;
+    backdrop-filter: blur(4px);
+}
+
+.modal {
+    background: #1e293b;
+    padding: 2rem;
+    border-radius: 1rem;
+    width: 90%;
+    max-width: 600px;
+    border: 1px solid #334155;
+    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+}
+
+.modalActions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 1rem;
+    margin-top: 1.5rem;
+}
+
+.cancelButton {
+    background: transparent;
+    border: 1px solid #334155;
+    color: #94a3b8;
+    padding: 0.75rem 1.5rem;
+    border-radius: 0.5rem;
+    cursor: pointer;
+    font-weight: 500;
+    transition: all 0.2s;
+}
+
+.cancelButton:hover {
+    border-color: #64748b;
+    color: #f8fafc;
+}
+
+.textarea {
+    width: 100%;
+    height: 150px;
+    background: #0f172a;
+    border: 1px solid #334155;
+    color: #f8fafc;
+    padding: 1rem;
+    border-radius: 0.5rem;
+    resize: vertical;
+    font-family: monospace;
+}
+
+.emptyState {
+    text-align: center;
+    color: #64748b;
+    padding: 2rem;
+    font-style: italic;
 }
