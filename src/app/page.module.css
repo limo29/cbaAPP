@@ -71,3 +71,44 @@
   color: #94a3b8;
   text-align: center;
 }
+
+/* Prominent Card Styles */
+.prominentCard {
+  border-width: 2px;
+  position: relative;
+  overflow: hidden;
+}
+
+.prominentCardPrimary {
+  border-color: var(--primary);
+  background: linear-gradient(145deg, var(--card-bg), rgba(74, 222, 128, 0.1));
+  box-shadow: 0 4px 20px rgba(74, 222, 128, 0.15);
+}
+
+.prominentCardPrimary:hover {
+  background: linear-gradient(145deg, var(--card-hover), rgba(74, 222, 128, 0.2));
+  box-shadow: 0 8px 30px rgba(74, 222, 128, 0.3);
+  transform: translateY(-4px) scale(1.03);
+}
+
+.prominentCardSecondary {
+  border-color: var(--secondary);
+  background: linear-gradient(145deg, var(--card-bg), rgba(248, 113, 113, 0.1));
+  box-shadow: 0 4px 20px rgba(248, 113, 113, 0.15);
+}
+
+.prominentCardSecondary:hover {
+  background: linear-gradient(145deg, var(--card-hover), rgba(248, 113, 113, 0.2));
+  box-shadow: 0 8px 30px rgba(248, 113, 113, 0.3);
+  transform: translateY(-4px) scale(1.03);
+}
+
+.prominentCardPrimary .icon {
+  color: var(--primary);
+  filter: drop-shadow(0 0 8px rgba(74, 222, 128, 0.5));
+}
+
+.prominentCardSecondary .icon {
+  color: var(--secondary);
+  filter: drop-shadow(0 0 8px rgba(248, 113, 113, 0.5));
+}

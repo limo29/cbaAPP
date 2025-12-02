@@ -5,9 +5,12 @@ import dynamic from 'next/dynamic';
 import { DndContext, closestCenter, KeyboardSensor, PointerSensor, useSensor, useSensors, DragEndEvent } from '@dnd-kit/core';
 import { arrayMove, SortableContext, sortableKeyboardCoordinates, verticalListSortingStrategy, useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
-import { Upload, Plus, Settings, Trash2, Edit2, GripVertical, X, Save, AlertTriangle, Check, RefreshCw, User, RotateCcw, Phone } from 'lucide-react';
+import { Upload, Plus, Settings, Trash2, Edit2, GripVertical, X, Save, AlertTriangle, Check, RefreshCw, User, RotateCcw, Phone, FileText, BarChart2 } from 'lucide-react';
 import Link from 'next/link';
 import Papa from 'papaparse';
+import jsPDF from 'jspdf';
+import autoTable from 'jspdf-autotable';
+import { toast } from 'sonner';
 import { geocodeAddress } from '@/utils/geocoding';
 import { isPointInPolygon, getDistance } from '@/utils/geometry';
 
@@ -219,7 +222,7 @@ export default function AdminPage() {
             fetchData();
         } catch (e) {
             console.error(e);
-            alert('Fehler beim Berechnen der Route.');
+            toast.error('Fehler beim Berechnen der Route.');
         } finally {
             setLoading(false);
         }
@@ -229,7 +232,7 @@ export default function AdminPage() {
         const { active, over } = event;
 
         if (selectedTerritoryId === 'all') {
-            alert('Bitte wähle zuerst ein Gebiet aus, um die Reihenfolge zu ändern.');
+            toast.warning('Bitte wähle zuerst ein Gebiet aus, um die Reihenfolge zu ändern.');
             return;
         }
 
@@ -278,7 +281,7 @@ export default function AdminPage() {
 
     const finishDrawing = () => {
         if (drawPoints.length < 3) {
-            alert('Ein Gebiet braucht mindestens 3 Punkte.');
+            toast.warning('Ein Gebiet braucht mindestens 3 Punkte.');
             return;
         }
         setIsDrawing(false);
@@ -442,7 +445,7 @@ export default function AdminPage() {
             fetchData();
         } catch (e) {
             console.error(e);
-            alert('Fehler bei der Optimierung.');
+            toast.error('Fehler bei der Optimierung.');
         } finally {
             setLoading(false);
         }
@@ -476,13 +479,13 @@ export default function AdminPage() {
                     data = result.data;
                 }
             } else {
-                alert('Bitte URL eingeben oder Daten einfügen.');
+                toast.warning('Bitte URL eingeben oder Daten einfügen.');
                 setImporting(false);
                 return;
             }
 
             if (data.length === 0) {
-                alert('Keine Daten gefunden.');
+                toast.warning('Keine Daten gefunden.');
                 setImporting(false);
                 return;
             }
@@ -516,7 +519,7 @@ export default function AdminPage() {
             setImportStep('mapping');
         } catch (e) {
             console.error(e);
-            alert('Fehler beim Analysieren der Daten. Bitte Format prüfen.');
+            toast.error('Fehler beim Analysieren der Daten. Bitte Format prüfen.');
         } finally {
             setImporting(false);
         }
@@ -525,7 +528,7 @@ export default function AdminPage() {
     const deleteAllTrees = async () => {
         const password = prompt('Bitte Passwort eingeben um ALLE Bäume zu löschen:');
         if (password !== APP_CONFIG.adminPassword) {
-            alert('Falsches Passwort!');
+            toast.error('Falsches Passwort!');
             return;
         }
 
@@ -536,7 +539,7 @@ export default function AdminPage() {
 
     const executeImport = async () => {
         if (!columnMapping.street && !columnMapping.city) {
-            alert('Bitte mindestens eine Spalte für die Adresse (Straße oder Ort) auswählen.');
+            toast.warning('Bitte mindestens eine Spalte für die Adresse (Straße oder Ort) auswählen.');
             return;
         }
 
@@ -564,9 +567,8 @@ export default function AdminPage() {
             const name = `${firstName} ${lastName}`.trim() || 'Unbenannt';
 
             // Construct Note
-            const noteVal = columnMapping.note ? item[columnMapping.note] : '';
-            const paymentVal = columnMapping.payment ? item[columnMapping.payment] : '';
-            const note = `${paymentVal ? 'Zahlung: ' + paymentVal + ' | ' : ''}${noteVal}`;
+            const note = columnMapping.note ? item[columnMapping.note] : '';
+            const payment = columnMapping.payment ? item[columnMapping.payment] : '';
 
             const phone = columnMapping.phone ? item[columnMapping.phone] : '';
 
@@ -627,6 +629,7 @@ export default function AdminPage() {
                 address: address,
                 phone: phone,
                 note: note,
+                payment_method: payment,
                 lat: coords?.lat,
                 lng: coords?.lng,
                 status: status,
@@ -712,6 +715,7 @@ export default function AdminPage() {
                         address: item.address,
                         phone: item.phone,
                         note: item.note,
+                        payment_method: item.payment_method,
                         lat: item.lat,
                         lng: item.lng,
                         territory_id: territoryId
@@ -750,7 +754,7 @@ export default function AdminPage() {
             fetchData();
         } catch (e) {
             console.error(e);
-            alert('Fehler beim Optimieren.');
+            toast.error('Fehler beim Optimieren.');
         } finally {
             setLoading(false);
         }
@@ -766,10 +770,43 @@ export default function AdminPage() {
             fetchData();
         } catch (e) {
             console.error(e);
-            alert('Fehler beim Berechnen.');
+            toast.error('Fehler beim Berechnen.');
         } finally {
             setLoading(false);
         }
+    };
+
+    const exportPDF = () => {
+        if (selectedTerritoryId === 'all' || selectedTerritoryId === 'none') {
+            toast.warning('Bitte ein Gebiet auswählen.');
+            return;
+        }
+
+        const territory = territories.find(t => t.id === selectedTerritoryId);
+        const doc = new jsPDF();
+
+        doc.setFontSize(18);
+        doc.text(`Sammelliste: ${territory?.name || 'Gebiet'}`, 14, 15);
+        doc.setFontSize(11);
+        doc.text(`Datum: ${new Date().toLocaleDateString()}`, 14, 22);
+
+        const tableData = visibleTrees.map((t, index) => [
+            index + 1,
+            t.address,
+            t.name,
+            t.note || '',
+            t.phone || ''
+        ]);
+
+        autoTable(doc, {
+            head: [['#', 'Adresse', 'Name', 'Notiz', 'Telefon']],
+            body: tableData,
+            startY: 25,
+            styles: { fontSize: 10 },
+            columnStyles: { 0: { cellWidth: 10 }, 1: { cellWidth: 60 }, 3: { cellWidth: 50 } }
+        });
+
+        doc.save(`route_${territory?.name || 'export'}.pdf`);
     };
 
     return (
@@ -798,11 +835,7 @@ export default function AdminPage() {
                     <select
                         className={styles.select}
                         value={selectedTerritoryId}
-                        onChange={(e) => {
-                            const val = e.target.value;
-                            if (val === 'all' || val === 'none') setSelectedTerritoryId(val);
-                            else setSelectedTerritoryId(Number(val));
-                        }}
+                        onChange={(e) => setSelectedTerritoryId(e.target.value === 'all' ? 'all' : e.target.value === 'none' ? 'none' : Number(e.target.value))}
                     >
                         <option value="all">Alle Gebiete</option>
                         <option value="none">Kein Gebiet</option>
@@ -810,6 +843,13 @@ export default function AdminPage() {
                             <option key={t.id} value={t.id}>{t.name}</option>
                         ))}
                     </select>
+
+                    <div style={{ marginTop: '1rem', borderTop: '1px solid #e2e8f0', paddingTop: '1rem' }}>
+                        <a href="/api/admin/backup" download className={styles.actionButton} style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', textDecoration: 'none', marginBottom: '0.5rem' }}>
+                            <Save size={18} /> Backup DB
+                        </a>
+                    </div>
+
                     <div style={{ fontSize: '0.75rem', color: '#64748b', marginTop: '0.25rem' }}>
                         Tipp: Klicke auf ein Gebiet in der Karte um es auszuwählen.
                     </div>

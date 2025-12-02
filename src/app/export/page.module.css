@@ -1,0 +1,272 @@
+.pageWrapper {
+    min-height: 100vh;
+    background-color: var(--background);
+    color: var(--foreground);
+    padding: 2rem 1rem;
+}
+
+.container {
+    max-width: 72rem;
+    /* 6xl */
+    margin: 0 auto;
+}
+
+.header {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    margin-bottom: 3rem;
+}
+
+.backButton {
+    padding: 0.75rem;
+    background-color: rgba(30, 41, 59, 0.5);
+    /* slate-800/50 */
+    color: #cbd5e1;
+    /* slate-300 */
+    border-radius: 0.75rem;
+    border: 1px solid var(--border);
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    backdrop-filter: blur(4px);
+}
+
+.backButton:hover {
+    background-color: rgba(51, 65, 85, 0.5);
+    /* slate-700/50 */
+    color: white;
+    border-color: #475569;
+}
+
+.titleWrapper {
+    display: flex;
+    flex-direction: column;
+}
+
+.title {
+    font-size: 1.875rem;
+    /* 3xl */
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    background: linear-gradient(to right, #60a5fa, #34d399);
+    /* blue-400 to emerald-400 */
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+}
+
+.subtitle {
+    color: #94a3b8;
+    /* slate-400 */
+    margin-top: 0.5rem;
+    font-size: 1.125rem;
+}
+
+.grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 2rem;
+}
+
+@media (min-width: 1024px) {
+    .grid {
+        grid-template-columns: 1fr 2fr;
+    }
+}
+
+.card {
+    background-color: rgba(30, 41, 59, 0.5);
+    backdrop-filter: blur(12px);
+    padding: 2rem;
+    border-radius: 1.5rem;
+    border: 1px solid rgba(51, 65, 85, 0.5);
+    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+    position: relative;
+    overflow: hidden;
+}
+
+.cardIcon {
+    width: 3rem;
+    height: 3rem;
+    background-color: rgba(59, 130, 246, 0.2);
+    /* blue-500/20 */
+    border-radius: 1rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 1.5rem;
+    color: #60a5fa;
+    /* blue-400 */
+}
+
+.cardTitle {
+    font-size: 1.5rem;
+    font-weight: 700;
+    margin-bottom: 0.75rem;
+    color: white;
+}
+
+.cardText {
+    color: #94a3b8;
+    margin-bottom: 2rem;
+    line-height: 1.6;
+}
+
+.primaryButton {
+    width: 100%;
+    background: linear-gradient(to right, #2563eb, #3b82f6);
+    color: white;
+    padding: 1rem;
+    border-radius: 0.75rem;
+    font-weight: 600;
+    border: none;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.75rem;
+    transition: all 0.2s;
+    box-shadow: 0 10px 15px -3px rgba(37, 99, 235, 0.3);
+}
+
+.primaryButton:hover {
+    transform: scale(1.02);
+    box-shadow: 0 20px 25px -5px rgba(37, 99, 235, 0.4);
+}
+
+.sectionHeader {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 1.5rem;
+}
+
+.sectionTitle {
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: #e2e8f0;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.badge {
+    font-size: 0.875rem;
+    color: #64748b;
+    background-color: rgba(30, 41, 59, 0.5);
+    padding: 0.25rem 0.75rem;
+    border-radius: 9999px;
+    border: 1px solid var(--border);
+}
+
+.territoryGrid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 1rem;
+}
+
+@media (min-width: 640px) {
+    .territoryGrid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+.territoryCard {
+    background-color: rgba(30, 41, 59, 0.3);
+    padding: 1.25rem;
+    border-radius: 1rem;
+    border: 1px solid rgba(51, 65, 85, 0.5);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    transition: all 0.3s;
+}
+
+.territoryCard:hover {
+    background-color: rgba(30, 41, 59, 0.8);
+    border-color: rgba(59, 130, 246, 0.5);
+    box-shadow: 0 10px 15px -3px rgba(30, 58, 138, 0.2);
+}
+
+.territoryName {
+    font-weight: 600;
+    color: #e2e8f0;
+    font-size: 1.125rem;
+    margin-bottom: 0.25rem;
+}
+
+.territoryCard:hover .territoryName {
+    color: white;
+}
+
+.territoryInfo {
+    font-size: 0.875rem;
+    color: #64748b;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.dot {
+    width: 0.5rem;
+    height: 0.5rem;
+    border-radius: 50%;
+    background-color: #475569;
+}
+
+.dot.active {
+    background-color: #10b981;
+    /* emerald-500 */
+}
+
+.downloadButton {
+    color: #94a3b8;
+    background-color: rgba(51, 65, 85, 0.5);
+    padding: 0.75rem;
+    border-radius: 0.75rem;
+    border: none;
+    cursor: pointer;
+    transition: all 0.3s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.territoryCard:hover .downloadButton {
+    background-color: #2563eb;
+    color: white;
+    transform: rotate(12deg);
+}
+
+.territoryCard:hover .downloadButton:hover {
+    transform: rotate(0deg) scale(1.1);
+}
+
+.loadingWrapper {
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: var(--background);
+    color: white;
+}
+
+.spinner {
+    width: 3rem;
+    height: 3rem;
+    border: 4px solid #3b82f6;
+    border-top-color: transparent;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+    margin-bottom: 1rem;
+}
+
+@keyframes spin {
+    to {
+        transform: rotate(360deg);
+    }
+}
