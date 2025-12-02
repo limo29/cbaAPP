@@ -1,7 +1,8 @@
-FROM node:18-slim AS base
+FROM node:20-slim AS base
 ENV NEXT_TELEMETRY_DISABLED 1
 
 FROM base AS deps
+RUN apt-get update && apt-get install -y python3 make g++
 WORKDIR /app
 COPY package.json package-lock.json* ./
 RUN npm ci
