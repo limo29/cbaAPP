@@ -32,6 +32,38 @@ export async function PUT(request: Request, { params }: { params: Promise<{ id: 
         updates.push('note = ?');
         values.push(body.note);
     }
+    if (body.name !== undefined) {
+        updates.push('name = ?');
+        values.push(body.name);
+    }
+    if (body.first_name !== undefined) {
+        updates.push('first_name = ?');
+        values.push(body.first_name);
+    }
+    if (body.address !== undefined) {
+        updates.push('address = ?');
+        values.push(body.address);
+    }
+    if (body.zip !== undefined) {
+        updates.push('zip = ?');
+        values.push(body.zip);
+    }
+    if (body.city !== undefined) {
+        updates.push('city = ?');
+        values.push(body.city);
+    }
+    if (body.email !== undefined) {
+        updates.push('email = ?');
+        values.push(body.email);
+    }
+    if (body.phone !== undefined) {
+        updates.push('phone = ?');
+        values.push(body.phone);
+    }
+    if (body.payment_method !== undefined) {
+        updates.push('payment_method = ?');
+        values.push(body.payment_method);
+    }
 
     if (updates.length === 0) return NextResponse.json({ success: true });
 

@@ -24,7 +24,12 @@ const LeafletMap = dynamic(() => import('../../components/Map'), { ssr: false })
 interface Tree {
     id: number;
     name: string;
+    first_name?: string;
     address: string;
+    zip?: string;
+    city?: string;
+    email?: string;
+    payment_method?: string;
     lat: number;
     lng: number;
     status: string;
@@ -113,7 +118,7 @@ export default function AdminPage() {
     const [newTerritoryColor, setNewTerritoryColor] = useState('#ff0000');
 
     const [editingTree, setEditingTree] = useState<Tree | null>(null);
-    const [editNote, setEditNote] = useState('');
+    // Removed editNote, will use editingTree state directly for form fields
 
     // Drawing state
     const [isDrawing, setIsDrawing] = useState(false);
@@ -411,18 +416,31 @@ export default function AdminPage() {
         }
     };
 
-    const saveNote = async () => {
+    const saveTree = async () => {
         if (!editingTree) return;
 
-        setTrees(prev => prev.map(t => t.id === editingTree.id ? { ...t, note: editNote } : t));
+        setTrees(prev => prev.map(t => t.id === editingTree.id ? editingTree : t));
 
         await fetch(`/api/trees/${editingTree.id}`, {
             method: 'PUT',
-            body: JSON.stringify({ note: editNote })
+            body: JSON.stringify({
+                name: editingTree.name,
+                first_name: editingTree.first_name,
+                address: editingTree.address,
+                zip: editingTree.zip,
+                city: editingTree.city,
+                phone: editingTree.phone,
+                email: editingTree.email,
+                payment_method: editingTree.payment_method,
+                status: editingTree.status,
+                note: editingTree.note,
+                territory_id: editingTree.territory_id,
+                sequence: editingTree.sequence
+            })
         });
 
         setEditingTree(null);
-        setEditNote('');
+        fetchData();
     };
 
     const optimizeTerritory = async (territoryId: number) => {
@@ -535,6 +553,15 @@ export default function AdminPage() {
         if (!confirm('Wirklich ALLE Bäume löschen? Dies kann nicht rückgängig gemacht werden.')) return;
         await fetch('/api/trees', { method: 'DELETE' });
         fetchData();
+    };
+
+    const deleteSingleTree = async (id: number) => {
+        // Confirmation is handled in the component or modal, but safe to double check if called directly?
+        // The component SortableTreeItem has a confirm. We can add one here if needed, but the UI flow seems to be button -> confirm -> delete.
+        await fetch(`/api/trees/${id}`, { method: 'DELETE' });
+        if (editingTree?.id === id) setEditingTree(null);
+        fetchData();
+        toast.success('Baum gelöscht');
     };
 
     const executeImport = async () => {
@@ -1020,7 +1047,8 @@ export default function AdminPage() {
                                     key={tree.id}
                                     tree={tree}
                                     index={index}
-                                    onEdit={(t) => { setEditingTree(t); setEditNote(t.note || ''); }}
+                                    onEdit={(t) => setEditingTree(t)}
+                                    onDelete={deleteSingleTree}
                                     onHighlight={handleTreeClick}
                                 />
                             ))}
@@ -1342,20 +1370,167 @@ export default function AdminPage() {
             {
                 editingTree && (
                     <div className={styles.modalOverlay}>
-                        <div className={styles.modal}>
-                            <h3>Notiz bearbeiten</h3>
-                            <p><strong>{editingTree.name}</strong></p>
+                        <div className={styles.modal} style={{ maxWidth: '600px', width: '95%', maxHeight: '90vh', overflowY: 'auto' }}>
+                            <h3>Baum Bearbeiten</h3>
+
+                            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem', marginBottom: '1rem' }}>
+                                <div>
+                                    <label className={styles.label}>Name</label>
+                                    <input
+                                        type="text"
+                                        className={styles.input}
+                                        value={editingTree.name || ''}
+                                        onChange={(e) => setEditingTree({ ...editingTree, name: e.target.value })}
+                                    />
+                                </div>
+                                <div>
+                                    <label className={styles.label}>Vorname</label>
+                                    <input
+                                        type="text"
+                                        className={styles.input}
+                                        value={editingTree.first_name || ''}
+                                        onChange={(e) => setEditingTree({ ...editingTree, first_name: e.target.value })}
+                                    />
+                                </div>
+                                <div style={{ gridColumn: 'span 2' }}>
+                                    <label className={styles.label}>Adresse</label>
+                                    <input
+                                        type="text"
+                                        className={styles.input}
+                                        value={editingTree.address || ''}
+                                        onChange={(e) => setEditingTree({ ...editingTree, address: e.target.value })}
+                                    />
+                                </div>
+                                <div>
+                                    <label className={styles.label}>PLZ</label>
+                                    <input
+                                        type="text"
+                                        className={styles.input}
+                                        value={editingTree.zip || ''}
+                                        onChange={(e) => setEditingTree({ ...editingTree, zip: e.target.value })}
+                                    />
+                                </div>
+                                <div>
+                                    <label className={styles.label}>Stadt</label>
+                                    <input
+                                        type="text"
+                                        className={styles.input}
+                                        value={editingTree.city || ''}
+                                        onChange={(e) => setEditingTree({ ...editingTree, city: e.target.value })}
+                                    />
+                                </div>
+                                <div>
+                                    <label className={styles.label}>Telefon</label>
+                                    <input
+                                        type="text"
+                                        className={styles.input}
+                                        value={editingTree.phone || ''}
+                                        onChange={(e) => setEditingTree({ ...editingTree, phone: e.target.value })}
+                                    />
+                                </div>
+                                <div>
+                                    <label className={styles.label}>Email</label>
+                                    <input
+                                        type="text"
+                                        className={styles.input}
+                                        value={editingTree.email || ''}
+                                        onChange={(e) => setEditingTree({ ...editingTree, email: e.target.value })}
+                                    />
+                                </div>
+                                <div>
+                                    <label className={styles.label}>Bezahlung</label>
+                                    <select
+                                        className={styles.select}
+                                        value={editingTree.payment_method || ''}
+                                        onChange={(e) => setEditingTree({ ...editingTree, payment_method: e.target.value })}
+                                    >
+                                        <option value="">-- Wählen --</option>
+                                        <option value="bar">Bar</option>
+                                        <option value="paypal">PayPal</option>
+                                        <option value="ueberweisung">Überweisung</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label className={styles.label}>Status</label>
+                                    <select
+                                        className={styles.select}
+                                        value={editingTree.status || 'open'}
+                                        onChange={(e) => setEditingTree({ ...editingTree, status: e.target.value })}
+                                    >
+                                        <option value="open">Offen</option>
+                                        <option value="collected">Abgeholt</option>
+                                        <option value="not_found">Nicht gefunden</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label className={styles.label}>Gebiet</label>
+                                    <select
+                                        className={styles.select}
+                                        value={editingTree.territory_id || ''}
+                                        onChange={(e) => setEditingTree({ ...editingTree, territory_id: Number(e.target.value) })}
+                                    >
+                                        <option value="">-- Kein Gebiet --</option>
+                                        {territories.map(t => (
+                                            <option key={t.id} value={t.id}>{t.name}</option>
+                                        ))}
+                                    </select>
+                                </div>
+                                <div>
+                                    <label className={styles.label}>Nr. (Reihenfolge)</label>
+                                    <input
+                                        type="number"
+                                        className={styles.input}
+                                        value={editingTree.sequence !== undefined ? editingTree.sequence + 1 : ''}
+                                        onChange={(e) => setEditingTree({ ...editingTree, sequence: (parseInt(e.target.value) || 1) - 1 })}
+                                    />
+                                </div>
+                                <div>
+                                    <label className={styles.label}>Koordinaten (Lat/Lng)</label>
+                                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.5rem' }}>
+                                        <input
+                                            type="number"
+                                            className={styles.input}
+                                            value={editingTree.lat}
+                                            onChange={(e) => setEditingTree({ ...editingTree, lat: parseFloat(e.target.value) })}
+                                            step="0.000001"
+                                        />
+                                        <input
+                                            type="number"
+                                            className={styles.input}
+                                            value={editingTree.lng}
+                                            onChange={(e) => setEditingTree({ ...editingTree, lng: parseFloat(e.target.value) })}
+                                            step="0.000001"
+                                        />
+                                    </div>
+                                </div>
+                            </div>
+
+                            <label className={styles.label}>Notiz</label>
                             <textarea
                                 className={styles.textarea}
-                                value={editNote}
-                                onChange={(e) => setEditNote(e.target.value)}
+                                value={editingTree.note || ''}
+                                onChange={(e) => setEditingTree({ ...editingTree, note: e.target.value })}
                                 placeholder="Notiz eingeben..."
                             />
-                            <div className={styles.modalActions}>
-                                <button className={styles.cancelButton} onClick={() => setEditingTree(null)}>Abbrechen</button>
-                                <button className={styles.button} onClick={saveNote}>
-                                    <Save size={16} /> Speichern
+
+                            <div className={styles.modalActions} style={{ justifyContent: 'space-between' }}>
+                                <button
+                                    className={styles.button}
+                                    style={{ background: '#ef4444' }}
+                                    onClick={() => {
+                                        if (confirm('Diesen Baum wirklich löschen?')) {
+                                            deleteSingleTree(editingTree.id);
+                                        }
+                                    }}
+                                >
+                                    <Trash2 size={16} /> Löschen
                                 </button>
+                                <div style={{ display: 'flex', gap: '0.5rem' }}>
+                                    <button className={styles.cancelButton} onClick={() => setEditingTree(null)}>Schließen</button>
+                                    <button className={styles.button} onClick={saveTree}>
+                                        <Save size={16} /> Speichern
+                                    </button>
+                                </div>
                             </div>
                         </div>
                     </div>

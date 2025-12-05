@@ -1,10 +1,9 @@
 .container {
     display: grid;
-    height: 100vh;
+    height: calc(100vh - 64px);
     width: 100vw;
     background: var(--background);
-    padding-bottom: 80px;
-    /* Space for Navbar */
+    /* padding-bottom removed as Navbar is at the top */
     overflow: hidden;
 
     /* Mobile Layout: Header -> Map -> List */

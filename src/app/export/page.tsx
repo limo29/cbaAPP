@@ -2,9 +2,10 @@
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { ArrowLeft, FileText, Printer, Download, Map } from 'lucide-react';
+import { ArrowLeft, FileText, Printer, Download, Map, FileSpreadsheet } from 'lucide-react';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
+import Papa from 'papaparse';
 import styles from './page.module.css';
 
 interface Territory {
@@ -15,12 +16,17 @@ interface Territory {
 interface Tree {
     id: number;
     name: string;
+    first_name?: string;
     address: string;
+    zip?: string;
+    city?: string;
     note?: string;
     phone?: string;
+    email?: string;
     payment_method?: string;
     territory_id: number;
     sequence?: number;
+    status?: string;
 }
 
 export default function ExportPage() {
@@ -38,6 +44,34 @@ export default function ExportPage() {
             setLoading(false);
         });
     }, []);
+
+    const exportCSV = () => {
+        const csvData = trees.map(t => ({
+            id: t.id,
+            name: t.name,
+            first_name: t.first_name || '',
+            address: t.address,
+            zip: t.zip || '',
+            city: t.city || '',
+            phone: t.phone || '',
+            email: t.email || '',
+            payment_method: t.payment_method || '',
+            note: t.note || '',
+            territory_id: t.territory_id,
+            territory_name: territories.find(ter => ter.id === t.territory_id)?.name || '',
+            status: t.status || 'open'
+        }));
+
+        const csv = Papa.unparse(csvData);
+        const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.setAttribute('download', `baeume_export_${new Date().toLocaleDateString('de-DE')}.csv`);
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+    };
 
     const generatePDF = (territoryId: number | 'all') => {
         const doc = new jsPDF();
@@ -139,9 +173,18 @@ export default function ExportPage() {
                             <button
                                 onClick={() => generatePDF('all')}
                                 className={styles.primaryButton}
+                                style={{ marginBottom: '1rem' }}
                             >
                                 <Download size={20} />
-                                <span>Alle Listen herunterladen</span>
+                                <span>Alle Listen herunterladen (PDF)</span>
+                            </button>
+                            <button
+                                onClick={exportCSV}
+                                className={styles.primaryButton}
+                                style={{ background: 'linear-gradient(to right, #10b981, #059669)' }}
+                            >
+                                <FileSpreadsheet size={20} />
+                                <span>Alle Bäume exportieren (CSV)</span>
                             </button>
                         </div>
                     </div>

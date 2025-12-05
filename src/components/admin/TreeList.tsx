@@ -2,13 +2,18 @@
 
 import { useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
-import { GripVertical, Edit2 } from 'lucide-react';
+import { GripVertical, Edit2, Trash2, Eye } from 'lucide-react';
 import styles from '@/app/admin/admin.module.css';
 
 interface Tree {
     id: number;
     name: string;
+    first_name?: string;
     address: string;
+    zip?: string;
+    city?: string;
+    email?: string;
+    payment_method?: string;
     lat: number;
     lng: number;
     status: string;
@@ -22,10 +27,11 @@ interface SortableTreeItemProps {
     tree: Tree;
     index: number;
     onEdit: (t: Tree) => void;
+    onDelete: (id: number) => void;
     onHighlight: (t: Tree) => void;
 }
 
-export function SortableTreeItem({ tree, index, onEdit, onHighlight }: SortableTreeItemProps) {
+export function SortableTreeItem({ tree, index, onEdit, onDelete, onHighlight }: SortableTreeItemProps) {
     const {
         attributes,
         listeners,
@@ -66,12 +72,15 @@ export function SortableTreeItem({ tree, index, onEdit, onHighlight }: SortableT
                     </div>
                 )}
             </div>
-            <button
-                className={styles.iconButton}
-                onClick={(e) => { e.stopPropagation(); onEdit(tree); }}
-            >
-                <Edit2 size={16} />
-            </button>
+            <div style={{ display: 'flex', gap: '0.25rem' }}>
+                <button
+                    className={styles.iconButton}
+                    onClick={(e) => { e.stopPropagation(); onEdit(tree); }}
+                    title="Details & Bearbeiten"
+                >
+                    <Edit2 size={16} />
+                </button>
+            </div>
         </div>
     );
 }
