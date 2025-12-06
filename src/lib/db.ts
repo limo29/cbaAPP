@@ -57,6 +57,14 @@ db.exec(`
     status TEXT DEFAULT 'open', -- open, called, registered, not_reached, deleted
     last_updated DATETIME DEFAULT CURRENT_TIMESTAMP
   );
+
+  CREATE TABLE IF NOT EXISTS posters (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    lat REAL NOT NULL,
+    lng REAL NOT NULL,
+    note TEXT,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+  );
 `
 );
 

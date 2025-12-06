@@ -1,0 +1,128 @@
+.container {
+    height: calc(100dvh - 64px);
+    display: flex;
+    flex-direction: column;
+    position: relative;
+    overflow: hidden;
+}
+
+.header {
+    padding: 1rem;
+    background: var(--card-bg);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    z-index: 10;
+}
+
+.title {
+    font-size: 1.25rem;
+    font-weight: bold;
+}
+
+.mapWrapper {
+    flex: 1;
+    position: relative;
+    /* Ensure content stays within */
+    min-height: 0;
+}
+
+.overlay {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background: var(--card-bg);
+    padding: 1.5rem;
+    border-top-left-radius: 1.5rem;
+    border-top-right-radius: 1.5rem;
+    box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.3);
+    z-index: 1000;
+    /* Above map */
+    transform: translateY(110%);
+    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.overlay.visible {
+    transform: translateY(0);
+}
+
+.controls {
+    display: flex;
+    gap: 0.75rem;
+    margin-top: 1.5rem;
+}
+
+.fab {
+    position: absolute;
+    bottom: 2rem;
+    right: 2rem;
+    width: 3.5rem;
+    height: 3.5rem;
+    border-radius: 50%;
+    background: var(--primary);
+    color: #0f172a;
+    /* Dark text on bright button */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+    cursor: pointer;
+    z-index: 900;
+    border: none;
+    transition: transform 0.2s;
+}
+
+.fab:hover,
+.fab:active {
+    transform: scale(95%);
+}
+
+.input {
+    width: 100%;
+    padding: 0.75rem;
+    border: 1px solid var(--border);
+    background: var(--background);
+    color: var(--foreground);
+    border-radius: 0.5rem;
+    margin-bottom: 0.5rem;
+    font-size: 16px;
+    /* Prevent zoom on mobile */
+}
+
+.button {
+    padding: 0.75rem 1rem;
+    border-radius: 0.5rem;
+    border: none;
+    cursor: pointer;
+    font-weight: bold;
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+}
+
+.buttonPrimary {
+    background: var(--primary);
+    color: #0f172a;
+}
+
+.buttonDanger {
+    background: var(--secondary);
+    color: white;
+}
+
+.buttonIcon {
+    background: transparent;
+    border: none;
+    color: inherit;
+    padding: 0.5rem;
+    cursor: pointer;
+    border-radius: 50%;
+}
+
+.buttonIcon:hover {
+    background: rgba(255, 255, 255, 0.1);
+}

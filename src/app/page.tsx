@@ -1,5 +1,5 @@
 import Link from 'next/link';
-import { Truck, Settings, User, Printer, ClipboardList, TreePine, Phone, FileText } from 'lucide-react';
+import { Truck, Settings, User, Printer, ClipboardList, TreePine, Phone, FileText, MapPin } from 'lucide-react';
 import styles from './page.module.css';
 
 export default function Home() {
@@ -56,6 +56,12 @@ export default function Home() {
           <Phone className={styles.icon} />
           <h2 className={styles.cardTitle}>Telefonaktion</h2>
           <p className={styles.cardText}>Alte Listen abtelefonieren.</p>
+        </Link>
+
+        <Link href="/posters" className={styles.card}>
+          <MapPin className={styles.icon} />
+          <h2 className={styles.cardTitle}>Plakate</h2>
+          <p className={styles.cardText}>Standorte erfassen und verwalten.</p>
         </Link>
       </div>
     </main>
