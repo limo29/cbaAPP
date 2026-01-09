@@ -38,6 +38,12 @@
     padding: 0.5rem;
     border-radius: 0.5rem;
     font-size: 1rem;
+    max-width: 200px;
+    /* Prevent overflow */
+    text-overflow: ellipsis;
+    /* clean truncation */
+    overflow: hidden;
+    white-space: nowrap;
 }
 
 .mapContainer {
