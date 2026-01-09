@@ -128,7 +128,8 @@
 }
 
 .cardActions {
-    display: flex;
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
     border-top: 1px solid var(--border);
     background: rgba(0, 0, 0, 0.2);
     flex-shrink: 0;
@@ -136,7 +137,7 @@
 }
 
 .actionButton {
-    flex: 1;
+    width: 100%;
     padding: 1rem 0;
     border: none;
     background: transparent;
