@@ -20,6 +20,8 @@ export async function POST(request: Request) {
             } catch (e) {
                 console.error(`Error processing territory ${t.id}:`, e);
             }
+            // Rate limiting delay for OSRM
+            await new Promise(resolve => setTimeout(resolve, 1500));
         }
 
         return NextResponse.json({ success: true, count: territories.length });
